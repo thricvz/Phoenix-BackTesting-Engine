@@ -1,6 +1,5 @@
-import PhoenixBackTester.*;
-import PhoenixBackTester.data.CSVDataFeed;
-import PhoenixBackTester.data.CSVFormat;
+import PhoenixBackTester.data.CSVDataFeed.CSVDataFeed;
+import PhoenixBackTester.data.CSVDataFeed.CSVFormat;
 import PhoenixBackTester.data.FinancialData;
 
 
@@ -11,11 +10,11 @@ public class Main {
                 "Open",
                 "Close",
                 "High",
-                "Lows"
+                "Low"
         );
 
         CSVDataFeed dataFeed = new CSVDataFeed(
-                "/home/eric/DataSets/AAPL.csv",
+                "/home/eric/DataSets/NVidia_stock_history.csv",
                 format
         );
 

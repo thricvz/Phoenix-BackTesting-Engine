@@ -1,12 +1,14 @@
-package PhoenixBackTester.data;
+package PhoenixBackTester.data.CSVDataFeed;
+
+import PhoenixBackTester.data.DataFeed;
+import PhoenixBackTester.data.FinancialData;
+import PhoenixBackTester.data.Price;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
-
 import java.lang.Exception;
 
 class CSVParseException extends Exception{
@@ -15,7 +17,8 @@ class CSVParseException extends Exception{
    }
 
 }
-public class CSVDataFeed implements DataFeed{
+
+public class CSVDataFeed implements DataFeed {
     public CSVDataFeed(String fileLocation, CSVFormat fileFormat) {
         this.csvFileFormat = fileFormat;
 
@@ -26,12 +29,12 @@ public class CSVDataFeed implements DataFeed{
 
         } catch(FileNotFoundException notFoundError) {
             System.err.println("Could not find file at " + fileLocation);
-            System.exit(303);
+            System.exit(300);
 
         } catch(Exception error) {
-           System.err.println("Failed to parse CSV file At" + fileLocation + "due to error:");
+           System.err.println("Failed to parse CSV file At" + fileLocation + " due to error:");
            System.err.println(error.getMessage());
-           System.exit(303);
+           System.exit(300);
         }
 
     }
@@ -57,7 +60,7 @@ public class CSVDataFeed implements DataFeed{
     private void discoverHeaderOffsets(Scanner fileStream) throws CSVParseException {
        this.headerColumnIndex = new HashMap<String,Integer>();
        String csvHeaderLine = fileStream.nextLine();
-       String[] csvHeaders = csvHeaderLine.split(this.csvFileFormat.delimiter);
+       String[] csvHeaders = csvHeaderLine.split(this.csvFileFormat.regexDelimiter);
 
 
         for (int i = 0; i < csvHeaders.length ; i++) {
@@ -74,24 +77,27 @@ public class CSVDataFeed implements DataFeed{
 
        while (fileStream.hasNextLine()) {
            String csvLine = fileStream.nextLine();
-           String[] csvEntries = csvLine.split(this.csvFileFormat.delimiter);
+           String[] csvEntries = csvLine.split(this.csvFileFormat.regexDelimiter);
 
            try {
-               FinancialData dataExtractedFromLine = new FinancialData(
-                   csvEntries[headerColumnIndex.get(csvFileFormat.openPriceColumn)] ,
-                   csvEntries[headerColumnIndex.get(csvFileFormat.closePriceColumn)] ,
-                   csvEntries[headerColumnIndex.get(csvFileFormat.highPriceColumn)] ,
-                   csvEntries[headerColumnIndex.get(csvFileFormat.lowPriceColumn)]
+               FinancialData newData = new FinancialData(
+                   getPrice(csvFileFormat.openPriceColumn, csvEntries)  ,
+                   getPrice(csvFileFormat.closePriceColumn, csvEntries) ,
+                   getPrice(csvFileFormat.highPriceColumn, csvEntries)  ,
+                   getPrice(csvFileFormat.lowPriceColumn, csvEntries)
                );
 
-               this.rawData.add(dataExtractedFromLine);
+               this.rawData.add(newData);
 
            } catch (Exception error) {
-               throw new CSVParseException("Malformed csv line");
+               throw new CSVParseException("Malformed csv line due to: " + error.toString());
            }
        }
     }
-
+    private Price getPrice(String columnHeader, String[] entries) throws Exception{
+       Integer dataIndex = this.headerColumnIndex.get(columnHeader);
+       return new Price(entries[dataIndex], csvFileFormat.regexfloatingPoint);
+    }
     private Integer currentIndex = 0;
 
     private ArrayList<FinancialData> rawData;

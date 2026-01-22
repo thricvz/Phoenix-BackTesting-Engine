@@ -1,14 +1,6 @@
-package PhoenixBackTester.data;
+package PhoenixBackTester.data.CSVDataFeed;
 
 import java.util.List;
-
-
-enum CSVDataTypes{
-    Integer ,
-    Float   ,
-    String  ,
-    Boolean ,
-}
 
 public class CSVFormat {
     public CSVFormat(String _openPriceColumn, String _closePriceColumn,
@@ -33,14 +25,12 @@ public class CSVFormat {
         return false;
     };
 
-    public CSVDataTypes getType() {
-        return CSVDataTypes.Integer;
-    }
 
     public String openPriceColumn;
     public String closePriceColumn;
     public String highPriceColumn;
     public String lowPriceColumn;
 
-    public String delimiter = ",";
+    public String regexDelimiter = "\\,";
+    public String regexfloatingPoint = "\\.";
 }
