@@ -4,8 +4,11 @@ import PhoenixBackTester.data.DataFeed;
 
 import java.lang.RuntimeException;
 
-public interface TradingStrategy {
-    void execute() throws  RuntimeException;
-    void provideDataFeed(DataFeed data);
+public abstract class TradingStrategy {
+    public abstract void execute() throws  RuntimeException;
+    public void provideDataFeed(DataFeed dataFeed) {
+       this.dataFeed = dataFeed;
+    };
 
+    protected DataFeed dataFeed;
 }

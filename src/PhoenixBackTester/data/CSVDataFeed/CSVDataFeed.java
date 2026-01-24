@@ -20,7 +20,8 @@ class CSVParseException extends Exception{
 
 public class CSVDataFeed implements DataFeed {
     public CSVDataFeed(String fileLocation, CSVFormat fileFormat) {
-        this.csvFileFormat = fileFormat;
+        this.m_csvFileFormat = fileFormat;
+        this.m_currentIndex = 0;
 
         try {
             File csv_file = new File(fileLocation);
@@ -44,64 +45,72 @@ public class CSVDataFeed implements DataFeed {
         if (reachedEnd())
             return null;
 
-        return this.rawData.get(this.currentIndex);
+        return this.m_rawData.get(this.m_currentIndex);
     }
 
     @Override
     public boolean reachedEnd() {
-       return this.currentIndex == this.rawData.size();
+       return this.m_currentIndex == this.m_rawData.size();
     }
 
     @Override
     public void advance() {
-        this.currentIndex++;
+       int previousDataIndex = this.m_currentIndex;
+       this.m_currentIndex ++;
+       this.m_rawData.get(previousDataIndex).makeFullyAvailable();
     }
 
     private void discoverHeaderOffsets(Scanner fileStream) throws CSVParseException {
-       this.headerColumnIndex = new HashMap<String,Integer>();
+       this.m_headerColumnIndex = new HashMap<String,Integer>();
        String csvHeaderLine = fileStream.nextLine();
-       String[] csvHeaders = csvHeaderLine.split(this.csvFileFormat.regexDelimiter);
+       String[] csvHeaders = csvHeaderLine.split(this.m_csvFileFormat.regexDelimiter);
 
 
         for (int i = 0; i < csvHeaders.length ; i++) {
            String header = csvHeaders[i];
-           if (this.csvFileFormat.hasHeader(header)) {
-               headerColumnIndex.put(header, i);
+           if (this.m_csvFileFormat.hasHeader(header)) {
+               m_headerColumnIndex.put(header, i);
            }
         }
     }
 
     private void parseFile(Scanner fileStream) throws CSVParseException {
-       this.rawData = new ArrayList<FinancialData>();
+       this.m_rawData = new ArrayList<FinancialData>();
        this.discoverHeaderOffsets(fileStream);
+
+       if (this.m_headerColumnIndex.size() < 4) {
+           throw new CSVParseException("Insufficient number of headers");
+       }
 
        while (fileStream.hasNextLine()) {
            String csvLine = fileStream.nextLine();
-           String[] csvEntries = csvLine.split(this.csvFileFormat.regexDelimiter);
+           String[] csvEntries = csvLine.split(this.m_csvFileFormat.regexDelimiter);
 
            try {
                FinancialData newData = new FinancialData(
-                   getPrice(csvFileFormat.openPriceColumn, csvEntries)  ,
-                   getPrice(csvFileFormat.closePriceColumn, csvEntries) ,
-                   getPrice(csvFileFormat.highPriceColumn, csvEntries)  ,
-                   getPrice(csvFileFormat.lowPriceColumn, csvEntries)
+                   getPrice(m_csvFileFormat.openPriceColumn, csvEntries)  ,
+                   getPrice(m_csvFileFormat.closePriceColumn, csvEntries) ,
+                   getPrice(m_csvFileFormat.highPriceColumn, csvEntries)  ,
+                   getPrice(m_csvFileFormat.lowPriceColumn, csvEntries)
                );
 
-               this.rawData.add(newData);
+               this.m_rawData.add(newData);
 
            } catch (Exception error) {
                throw new CSVParseException("Malformed csv line due to: " + error.toString());
            }
        }
+
     }
     private Price getPrice(String columnHeader, String[] entries) throws Exception{
-       Integer dataIndex = this.headerColumnIndex.get(columnHeader);
-       return new Price(entries[dataIndex], csvFileFormat.regexfloatingPoint);
+       Integer dataIndex = this.m_headerColumnIndex.get(columnHeader);
+       return new Price(entries[dataIndex], m_csvFileFormat.regexfloatingPoint);
     }
-    private Integer currentIndex = 0;
 
-    private ArrayList<FinancialData> rawData;
-    private HashMap<String,Integer> headerColumnIndex;
-    private CSVFormat csvFileFormat;
+    private CSVFormat m_csvFileFormat;
+    private HashMap<String,Integer> m_headerColumnIndex;
+    private int m_currentIndex;
+    private ArrayList<FinancialData> m_rawData;
 }
+
 

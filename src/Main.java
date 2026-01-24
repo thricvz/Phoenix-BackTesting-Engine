@@ -1,7 +1,10 @@
+import PhoenixBackTester.BackTester;
+import PhoenixBackTester.TradingStrategy;
 import PhoenixBackTester.data.CSVDataFeed.CSVDataFeed;
 import PhoenixBackTester.data.CSVDataFeed.CSVFormat;
 import PhoenixBackTester.data.FinancialData;
-
+import PhoenixBackTester.Indicators.MovingAverage.*;
+import PhoenixBackTester.Indicators.Indicator;
 
 public class Main {
     public static void main(String[] argv) {
@@ -10,20 +13,23 @@ public class Main {
                 "Open",
                 "Close",
                 "High",
-                "Low"
+                "Lows"
         );
 
         CSVDataFeed dataFeed = new CSVDataFeed(
-                "/home/eric/DataSets/NVidia_stock_history.csv",
+                "/home/eric/DataSets/AAPL.csv",
                 format
         );
 
-        while (!dataFeed.reachedEnd()) {
-            FinancialData  data = dataFeed.currentData();
-            System.out.println(data.toString());
-            System.out.println();
-
-            dataFeed.advance();
-        }
+        BackTester.launch(
+               new TradingStrategy() {
+                   @Override
+                   public void execute() {
+                      FinancialData openData = this.dataFeed.currentData();
+                      System.out.println(openData.toString());
+                   }
+               },
+               dataFeed
+        );
     }
 }
