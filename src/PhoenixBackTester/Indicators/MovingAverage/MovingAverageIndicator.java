@@ -18,10 +18,18 @@ public class MovingAverageIndicator extends Indicator {
     public MovingAverageData getData() {
         if (this.accumulatedPrice != null) {
             Price movingAverage = new Price(this.accumulatedPrice) ;
-            movingAverage.divide(this.iterationsPassed);
+            try {
+                movingAverage.divide(this.iterationsPassed);
+            } catch(Exception e) { return null; }
+
             return new MovingAverageData(movingAverage);
         }
-        return new MovingAverageData(new Price(1L, 9));
+        return new MovingAverageData(null);
+    }
+
+    @Override
+    public boolean isDataRelevant() {
+        return this.iterationsPassed > 0;
     }
 
     @Override

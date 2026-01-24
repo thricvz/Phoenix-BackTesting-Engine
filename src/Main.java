@@ -5,6 +5,7 @@ import PhoenixBackTester.data.CSVDataFeed.CSVFormat;
 import PhoenixBackTester.data.FinancialData;
 import PhoenixBackTester.Indicators.MovingAverage.*;
 import PhoenixBackTester.Indicators.Indicator;
+import PhoenixBackTester.data.Price;
 
 public class Main {
     public static void main(String[] argv) {
@@ -26,7 +27,7 @@ public class Main {
                    @Override
                    public void execute() {
                       FinancialData openData = this.dataFeed.currentData();
-                      System.out.println(openData.toString());
+                      System.out.print(openData.toString());
                    }
                },
                dataFeed
